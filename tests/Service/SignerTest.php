@@ -72,6 +72,18 @@ final class SignerTest extends TestCase
         );
     }
 
+    public function testHexNonceMatchesCurrentImplementation(): void
+    {
+        $request = new RequestDTO(
+            'https://magento.example.com/rest/V1/orders?searchCriteria%5BfilterGroups%5D%5B0%5D%5Bfilters%5D%5B0%5D%5Bfield%5D=increment_id&searchCriteria[pageSize]=10&q=a%20b+c'
+        );
+
+        self::assertSame(
+            'Authorization: Oauth oauth_consumer_key="consumer-key",oauth_nonce="0123456789abcdef0123456789abcdef",oauth_signature_method="HMAC-SHA256",oauth_timestamp="1700000000",oauth_token="access-token",oauth_signature="uBHu100KHmNu1wbCNv7hhNOu6LdNgLl1HyCAgJD/a9E="',
+            (new Signer(new FixedNonceGenerator('0123456789abcdef0123456789abcdef')))->sign($request, $this->credentials),
+        );
+    }
+
     public function testDoesNotModifyRequest(): void
     {
         $request = new RequestDTO('https://magento.example.com/rest/V1/orders', 'GET', null, ['Accept: application/json']);
@@ -82,12 +94,12 @@ final class SignerTest extends TestCase
         self::assertEquals($before, $request);
     }
 
-    public function testDefaultGeneratorProducesFreshNonces(): void
+    public function testDefaultGeneratorProducesFreshHexNonces(): void
     {
         $generator = new RandomNonceGenerator();
 
         self::assertNotSame($generator->nonce(), $generator->nonce());
-        self::assertSame(32, strlen((string) base64_decode($generator->nonce(), true)));
+        self::assertMatchesRegularExpression('/^[0-9a-f]{32}$/', $generator->nonce());
         self::assertEqualsWithDelta(time(), $generator->timestamp(), 5);
     }
 }

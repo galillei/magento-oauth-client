@@ -44,10 +44,10 @@ $client = new ApiClient(new OauthCredentialDTO(
 $order = $client->send(new RequestDTO('https://shop.example.com/rest/V1/orders/42'));
 
 // POST with a JSON body and extra headers
-$result = $client->send(new RequestDTO(
-    url: 'https://shop.example.com/rest/V1/orders/42/comments',
+$product = $client->send(new RequestDTO(
+    url: 'https://shop.example.com/rest/V1/products',
     method: 'POST',
-    body: json_encode(['statusHistory' => ['comment' => 'Shipped', 'is_customer_notified' => 0]]),
+    body: json_encode(['product' => ['sku' => 'sample-sku', 'name' => 'Sample product', 'price' => 10, 'attribute_set_id' => 4]]),
     headers: ['Accept: application/json'],
 ));
 ```
@@ -56,6 +56,9 @@ $result = $client->send(new RequestDTO(
 body or a bare scalar such as `true` causes a `TypeError`. The `Authorization`
 and `Content-Type: application/json` headers are added automatically; the `RequestDTO` you pass in
 is never modified, so it can be reused.
+
+The nonce is 32 random hex characters: Magento stores it in a `varchar(32)` column, so longer
+nonces cannot be matched on replay checks.
 
 ### Only signing
 
