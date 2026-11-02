@@ -52,8 +52,9 @@ $product = $client->send(new RequestDTO(
 ));
 ```
 
-`send()` returns the decoded JSON body as an `array`. Responses must be a JSON object or list — an empty
-body or a bare scalar such as `true` causes a `TypeError`. The `Authorization`
+`send()` returns the decoded JSON body as an `array`. A `void` endpoint, which Magento answers with a
+`null` body, returns `[]`, and a bare scalar comes back wrapped in a list (`true` → `[true]`). A body
+that is not valid JSON throws `\JsonException`. The `Authorization`
 and `Content-Type: application/json` headers are added automatically; the `RequestDTO` you pass in
 is never modified, so it can be reused.
 
@@ -82,6 +83,7 @@ An empty URL throws `\InvalidArgumentException`.
 | `ServerErrorException` | HTTP 5xx | Yes |
 | `ClientErrorException` | HTTP 4xx (bad signature, missing ACL, unknown entity, …) | No |
 | `\Exception` | HTTP 2xx with a body of `{"error": true, "message": "…"}` | No |
+| `\JsonException` | HTTP 2xx with a body that is not valid JSON (empty, HTML, truncated) | No |
 
 `ClientErrorException` and `ServerErrorException` expose `getStatusCode()` and `getResponseBody()`.
 

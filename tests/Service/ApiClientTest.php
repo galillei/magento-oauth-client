@@ -33,6 +33,41 @@ final class ApiClientTest extends TestCase
         );
     }
 
+    /**
+     * A service method declared `void` is rendered by Magento's REST API as a `null` body.
+     */
+    public function testVoidEndpointReturnsEmptyArray(): void
+    {
+        $result = $this->client(new FakeTransport('null'))->send($this->request());
+
+        self::assertSame([], $result);
+    }
+
+    public function testScalarBodyIsWrappedInArray(): void
+    {
+        $result = $this->client(new FakeTransport('true'))->send($this->request());
+
+        self::assertSame([true], $result);
+    }
+
+    /**
+     * A maintenance page or a truncated body must not pass for an empty success.
+     */
+    public function testMalformedBodyThrowsJsonException(): void
+    {
+        $this->expectException(\JsonException::class);
+
+        $this->client(new FakeTransport('<html><body>Service temporarily unavailable</body></html>'))
+            ->send($this->request());
+    }
+
+    public function testEmptyBodyThrowsJsonException(): void
+    {
+        $this->expectException(\JsonException::class);
+
+        $this->client(new FakeTransport(''))->send($this->request());
+    }
+
     public function testDoesNotModifyCallersRequest(): void
     {
         $request = $this->request();

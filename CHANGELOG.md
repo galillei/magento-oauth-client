@@ -4,6 +4,15 @@ All notable changes to this project are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [1.0.3] - 2026-11-02
+
+### Fixed
+- `ApiClient::send()` returns `[]` for an endpoint declared `void`, which Magento answers with a
+  `null` body, and wraps a bare scalar in a list (`true` → `[true]`). Both used to throw a `TypeError`.
+
+### Changed
+- A response body that is not valid JSON now throws `\JsonException` instead of a `TypeError`.
+
 ## [1.0.2] - 2026-10-30
 
 ### Fixed
